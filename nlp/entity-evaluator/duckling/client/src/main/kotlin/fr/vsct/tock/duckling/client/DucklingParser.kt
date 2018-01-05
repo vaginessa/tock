@@ -151,15 +151,15 @@ internal object DucklingParser : EntityEvaluator, EntityTypeClassifier, Parser {
     private fun parseDimension(parseResult: JSONValue, dimension: String): List<ValueWithRange> {
         return when (dimension) {
             timeDucklingDimension -> parseDate(parseResult)
-            "number" -> parseSimple(parseResult, dimension, { NumberValue(it[":value"].number()) })
-            "ordinal" -> parseSimple(parseResult, dimension, { OrdinalValue(it[":value"].number()) })
-            "distance" -> parseSimple(parseResult, dimension, { DistanceValue(it[":value"].number(), it[":unit"].string()) })
-            "temperature" -> parseSimple(parseResult, dimension, { TemperatureValue(it[":value"].number(), TemperatureUnit.valueOf(it[":unit"].string())) })
-            "volume" -> parseSimple(parseResult, dimension, { VolumeValue(it[":value"].number(), it[":unit"].string()) })
-            "amount-of-money" -> parseSimple(parseResult, dimension, { AmountOfMoneyValue(it[":value"].number(), it[":unit"].string()) })
-            "url" -> parseSimple(parseResult, dimension, { UrlValue(it[":value"].string()) })
-            "email" -> parseSimple(parseResult, dimension, { EmailValue(it[":value"].string()) })
-            "phone-number" -> parseSimple(parseResult, dimension, { PhoneNumberValue(it[":value"].string()) })
+            "number" -> parseSimple(parseResult, dimension, { NumberValue(it["value"].number()) })
+            "ordinal" -> parseSimple(parseResult, dimension, { OrdinalValue(it["value"].number()) })
+            "distance" -> parseSimple(parseResult, dimension, { DistanceValue(it["value"].number(), it["unit"].string()) })
+            "temperature" -> parseSimple(parseResult, dimension, { TemperatureValue(it["value"].number(), TemperatureUnit.valueOf(it["unit"].string())) })
+            "volume" -> parseSimple(parseResult, dimension, { VolumeValue(it["value"].number(), it["unit"].string()) })
+            "amount-of-money" -> parseSimple(parseResult, dimension, { AmountOfMoneyValue(it["value"].number(), it["unit"].string()) })
+            "url" -> parseSimple(parseResult, dimension, { UrlValue(it["value"].string()) })
+            "email" -> parseSimple(parseResult, dimension, { EmailValue(it["value"].string()) })
+            "phone-number" -> parseSimple(parseResult, dimension, { PhoneNumberValue(it["value"].string()) })
         //TODO duration
             else -> TODO("Not yet supported yet : $dimension")
         }
@@ -167,10 +167,10 @@ internal object DucklingParser : EntityEvaluator, EntityTypeClassifier, Parser {
 
     private fun parseSimple(parseResult: JSONValue, dim: String, parseFunction: (JSONValue) -> Value): List<ValueWithRange> {
         return parseResult.iterable().mapNotNull {
-            if (it[":dim"].string() == dim) {
-                val value = parseFunction.invoke(it[":value"])
-                val start = it[":start"].int()
-                val end = it[":end"].int()
+            if (it["dim"].string() == dim) {
+                val value = parseFunction.invoke(it["value"])
+                val start = it["start"].int()
+                val end = it["end"].int()
                 ValueWithRange(start, end, value, dim)
             } else {
                 null
@@ -183,41 +183,41 @@ internal object DucklingParser : EntityEvaluator, EntityTypeClassifier, Parser {
         try {
             if (!parseResult.isEmpty()) {
                 for (a in parseResult.iterable()) {
-                    if (a[":dim"].string() == timeDucklingDimension) {
-                        val start = a[":start"].int()
-                        val end = a[":end"].int()
+                    if (a["dim"].string() == timeDucklingDimension) {
+                        val start = a["start"].int()
+                        val end = a["end"].int()
 
-                        val valueMap = a[":value"]
+                        val valueMap = a["value"]
 
-                        val grain = valueMap[":grain"]
+                        val grain = valueMap["grain"]
                         if (grain.isNotNull()) {
                             result.add(ValueWithRange(
                                     start,
                                     end,
                                     DateEntityValue(
-                                            ZonedDateTime.parse(valueMap[":value"].string(), formatter),
+                                            ZonedDateTime.parse(valueMap["value"].string(), formatter),
                                             DateEntityGrain.valueOf(grain.string())
                                     ),
                                     timeDucklingDimension))
                         } else {
                             //type interval
-                            val fromMap = valueMap[":from"]
-                            val toMap = valueMap[":to"]
+                            val fromMap = valueMap["from"]
+                            val toMap = valueMap["to"]
                             var entityValue: ValueWithRange? = null
                             if (toMap.isNotNull() && fromMap.isNotNull()) {
-                                val toGrain = toMap[":grain"]
+                                val toGrain = toMap["grain"]
                                 if (toGrain.isNotNull()) {
                                     entityValue = ValueWithRange(
                                             start,
                                             end,
                                             DateIntervalEntityValue(
                                                     DateEntityValue(
-                                                            ZonedDateTime.parse(fromMap[":value"].string(), formatter),
-                                                            DateEntityGrain.valueOf(fromMap[":grain"].string())
+                                                            ZonedDateTime.parse(fromMap["value"].string(), formatter),
+                                                            DateEntityGrain.valueOf(fromMap["grain"].string())
                                                     ),
                                                     DateEntityValue(
-                                                            ZonedDateTime.parse(toMap[":value"].string(), formatter),
-                                                            DateEntityGrain.valueOf(toMap[":grain"].string())
+                                                            ZonedDateTime.parse(toMap["value"].string(), formatter),
+                                                            DateEntityGrain.valueOf(toMap["grain"].string())
                                                     )
                                             ),
                                             timeDucklingDimension)
@@ -231,8 +231,8 @@ internal object DucklingParser : EntityEvaluator, EntityTypeClassifier, Parser {
                                             start,
                                             end,
                                             DateEntityValue(
-                                                    ZonedDateTime.parse(vMap[":value"].string(), formatter),
-                                                    DateEntityGrain.valueOf(vMap[":grain"].string())
+                                                    ZonedDateTime.parse(vMap["value"].string(), formatter),
+                                                    DateEntityGrain.valueOf(vMap["grain"].string())
                                             ),
                                             timeDucklingDimension)
                                 }

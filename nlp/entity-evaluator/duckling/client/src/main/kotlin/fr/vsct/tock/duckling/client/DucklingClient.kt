@@ -30,7 +30,8 @@ import retrofit2.Call
 import retrofit2.Converter
 import retrofit2.Retrofit
 import retrofit2.converter.jackson.JacksonConverterFactory
-import retrofit2.http.Body
+import retrofit2.http.Field
+import retrofit2.http.FormUrlEncoded
 import retrofit2.http.GET
 import retrofit2.http.POST
 import java.lang.reflect.Type
@@ -42,16 +43,11 @@ import java.time.ZonedDateTime
  */
 internal object DucklingClient {
 
-    data class ParseRequest(val language: String,
-                            val dimensions: List<String>,
-                            val referenceDate: ZonedDateTime,
-                            val referenceTimezone: ZoneId,
-                            val textToParse: String)
-
     interface DucklingService {
 
+        @FormUrlEncoded
         @POST("parse")
-        fun parse(@Body request: ParseRequest): Call<JSONValue>
+        fun parse(@Field("locale") locale: String, @Field("text") text: String): Call<JSONValue>
 
         @GET("healthcheck")
         fun healthcheck(): Call<Void>
@@ -101,7 +97,13 @@ internal object DucklingClient {
             textToParse: String): JSONValue? {
         //duckling does not support well ’ char
         val text = textToParse.replace("’", "'")
-        return service.parse(ParseRequest(language, dimensions, referenceDate, referenceTimezone, text)).execute().body()
+        val locale = if ("fr" == language) {
+            "FR_XX"
+        } else {
+            language
+        }
+
+        return service.parse(locale, text).execute().body()
     }
 
     fun healthcheck(): Boolean {
