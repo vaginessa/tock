@@ -54,7 +54,7 @@
         <okhttp-signpost>1.1.0</okhttp-signpost>
         <signpost-core>1.2.1.2</signpost-core>
         <circuitbreaker>1.7.1</circuitbreaker>
-        <guava>31.1-jre</guava>
+        <guava>32.0.0-jre</guava>
         <google-auth>1.34.1</google-auth>
         <google-http-client>1.42.3</google-http-client>
         <jasypt>1.9.3</jasypt>
